@@ -1,8 +1,19 @@
 import EmployeesListItem from "../employees-list-item/employees-list-item";
 
 import './employees-list.css';
+import {DeleteItemFunc, DataItem, OnToggleIncreaseFunc, OnToggleRaiseFunc, OnChangeSalaryFunc} from '../app/app'
 
-const EmployeesList = ({data, onDelete, onToggleIncrease, onToggleRaise, onChangeSalary}) => {
+
+export interface EmployeesListProps {
+    data: Array<DataItem>,
+    onDelete: DeleteItemFunc,
+    onToggleIncrease: OnToggleIncreaseFunc,
+    onToggleRaise: OnToggleRaiseFunc,
+    onChangeSalary: OnChangeSalaryFunc
+
+}
+
+const EmployeesList = ({data, onChangeSalary, onDelete, onToggleIncrease, onToggleRaise}: EmployeesListProps) => {
 
     return (
         <ul className="app-list list-group">

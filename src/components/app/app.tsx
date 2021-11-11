@@ -9,21 +9,63 @@ import EmployeesAddForm from '../employees-add-form/employees-add-form';
 
 import './app.css';
 
-class App extends Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            data: [
-                {name: 'Сергей С.', salary: 800, increase: false, raise: true, id: nextId()},
-                {name: 'Андрей Р.', salary: 400, increase: true, raise: false, id: nextId()},
-                {name: 'Николай В.', salary: 2000, increase: false, raise: false, id: nextId()},
-            ],
-            term: '',
-            filter: ''
-        }
+export interface DataItem {
+    name: string,
+    salary: number,
+    increase: boolean,
+    raise: boolean,
+    id: string
+}
+
+ export enum FilterTypes {
+    All = '',
+    Salary = 'salary',
+    Raised = 'raised'
+}
+
+interface AppState {
+    data: Array<DataItem>,
+    term: string,
+    filter: FilterTypes
+}
+
+export interface addEmployeeFunc {
+    (name: string, salary: number): Array<DataItem> | void
+}
+
+export interface DeleteItemFunc {
+    (id: string): void
+}
+
+export interface OnToggleIncreaseFunc {
+    (id: string): void
+}
+
+export interface OnToggleRaiseFunc {
+    (id: string): void
+}
+
+export interface OnChangeSalaryFunc {
+    (id: string, value: number): void
+}
+
+export interface OnUpdateSearchFunc {
+    (term: string): void
+}
+
+class App extends Component<{}, AppState> {
+    state = {
+        data: [
+            {name: 'Сергей С.', salary: 800, increase: false, raise: true, id: nextId()},
+            {name: 'Андрей Р.', salary: 400, increase: true, raise: false, id: nextId()},
+            {name: 'Николай В.', salary: 2000, increase: false, raise: false, id: nextId()},
+        ],
+        term: '',
+        filter: FilterTypes.All
     }
 
-    deleteItem = id => {
+
+    deleteItem: DeleteItemFunc = (id) => {
         this.setState(({data}) => {
             return {
                 data: data.filter(item => item.id !== id)
@@ -31,14 +73,16 @@ class App extends Component {
         })
     }
 
-    addEmployee = (name, salary) => {
+
+    addEmployee: addEmployeeFunc = (name, salary) => {
         if (name.length > 3 && salary) {
             this.setState(({data}) => {
-                const newData = data.concat()
+                const newData: Array<DataItem> = data.concat()
                 newData.push({
                     name,
                     salary,
                     increase: false,
+                    raise: false,
                     id: nextId()
                 })
                 return {
@@ -48,7 +92,7 @@ class App extends Component {
         }
     }
 
-    onToggleIncrease = (id) => {
+    onToggleIncrease: OnToggleIncreaseFunc = (id) => {
         this.setState(({data}) => ({
             data: data.map(item => {
                 if (item.id === id) {
@@ -59,7 +103,7 @@ class App extends Component {
         }))
     }
 
-    onToggleRaise = (id) => {
+    onToggleRaise: OnToggleRaiseFunc = (id) => {
         this.setState(({data}) => ({
             data: data.map(item => {
                 if (item.id === id) {
@@ -70,17 +114,17 @@ class App extends Component {
         }))
     }
 
-    searchEmp = (items, term) => {
+    searchEmp = (items: Array<DataItem>, term: string): Array<DataItem> => {
         if (term.length === 0) return items
 
         return items.filter(item => item.name.indexOf(term) > -1)
     }
 
-    onUpdateSearch = term => {
+    onUpdateSearch: OnUpdateSearchFunc = (term) => {
         this.setState({term})
     }
 
-    filterEmps = (items, filter) => {
+    filterEmps = (items: Array<DataItem>, filter: FilterTypes): Array<DataItem> => {
         switch (filter) {
             case 'raised':
                 return items.filter(item => item.raise)
@@ -91,27 +135,28 @@ class App extends Component {
         }
     }
 
-    onFilterEmps = filter => {
+    onFilterEmps = (filter: FilterTypes) => {
         this.setState({filter})
     }
 
-    onChangeSalary = (id, value) => {
-        this.setState(({data}) => ({
-            data: data.map(item => {
-                if (item.id === id) {
-                    return {...item, salary: value}
-                }
-                return item
-            })
-        }))
-
+    onChangeSalary: OnChangeSalaryFunc = (id, value) => {
+        if (value) {
+            this.setState(({data}) => ({
+                data: data.map(item => {
+                    if (item.id === id) {
+                        return {...item, salary: value}
+                    }
+                    return item
+                })
+            }));
+        }
     }
 
 
     render() {
         const {data, term, filter} = this.state
-        const filteredData = this.filterEmps(data, filter)
-        const visibleData = this.searchEmp(filteredData, term)
+        const filteredData: Array<DataItem> | void  = this.filterEmps(data, filter)
+        const visibleData: Array<DataItem> | void = this.searchEmp(filteredData, term)
 
         return (
             <div className="app">
